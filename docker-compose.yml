@@ -1,18 +1,52 @@
 version: "3"
 
 services:
-  nginx-example:
+  lamp-nginx:
     image: nginx:1.13-alpine
     ports:
-      - "80:80"
+#      - 80:80
+      - 6080:80
     volumes:
       - ./www:/www
       - ./config/site.conf:/etc/nginx/conf.d/000-site.conf
-  php-example:
-    image: php7.2-mysql:latest
+
+  lamp-php:
+#    image: php7.2-mysql:latest
+    build:
+      context: .
+      dockerfile: ./service-php/Dockerfile
     volumes:
       - ./www:/www
-  mysql-example:
+
+  lamp-mysql:
     image: mysql:5.7
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: "true"
+
+  lamp-filebrowser:
+    image: filebrowser/filebrowser
+    #container_name: lamp72-filebrowser
+    restart: unless-stopped
+    volumes:
+      - ./:/srv
+#      - ./config.json:/config.json
+#      - ./database.db:/database.db
+    ports:
+#      - 80:80
+      - 6002:80
+      - 6003:443
+    environment:
+#      VIRTUAL_HOST: my.virtual.host
+      VIRTUAL_PORT: 80
+      LETSENCRYPT_HOST: my.virtual.host
+      LETSENCRYPT_EMAIL: admin@my.virtual.host
+# filebrowser login: admin/admin
+
+# docker-compose up -d
+# docker-compose -p lamp72a up -d
+# docker-compose down --remove-orphans
+
+# This file is based on following original sources:
+# https://sebastianbrosch.blog/docker-stack-nginx-mit-php-7-2-und-mysql/
+# https://github.com/sebastianbrosch/docker-stack-web-server
+# https://github.com/alex-salnikov/dockerized-php5.6
